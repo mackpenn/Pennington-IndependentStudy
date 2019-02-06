@@ -2,6 +2,8 @@ MacKenzie Pennington
 Technical Journal - CSC 490
 Thursdays 3pm-4pm with Dr. Ngo
 
+----------------------------------------------------------
+
 Friday, December 7th:
 -Final planning meeting with Dr. Ngo
   -Set goals and expectation to work towards to
@@ -9,4 +11,16 @@ Friday, December 7th:
 
 Thursday, January 24th:
 -Project start
--
+
+Thursday, January 31st:
+-Examined similar projects and set up Anaconda/Python 3
+-Laid out GUI format for mouse/keyboard recording, goal is to have a base on 2/7
+
+Sunday, February 3rd:
+-Started creating interface using TKinter library for Python
+-Created table layout and buttons, currently the buttons have no function
+-Notes: Adjusting from Java to Python is definitely a challenge for me, but I am enjoying it. Luckily, the TKinter library is very similar to the ReactJS Material-UI library I used at my internship over the summer.
+
+Tuesday, February 5th:
+-Began practicing with the button functionality, followed some online tutorials for simple changes such as configuring the labels
+-Worked mainly on actualy button functionality afterwards
