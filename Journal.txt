@@ -23,4 +23,19 @@ Sunday, February 3rd:
 
 Tuesday, February 5th:
 -Began practicing with the button functionality, followed some online tutorials for simple changes such as configuring the labels
--Worked mainly on actualy button functionality afterwards
+-Worked mainly on actual button functionality afterwards
+
+Wednesday, February 6th:
+-Created Treeview table with tkinter in GUI window
+-Issues:
+  -Button widgets cannot be embedded within Treeview widgets.
+-To-Do:
+  -Make tree insertion work together with record
+  -Add functionality to clear, record, and save buttons
+-Ideas for later in project:
+  -Add file menu widget to be able to load previous recordings
+  -Treeview allows for items to be selected - maybe be able to tab through mouse recordings?
+  
+Thursday, February 7th:
+-Pre-meeting: Tried to find workaround for using buttons and treeview at the same time
+-Ideas: Could go back to using grid instead of treeview, but might not be as efficient?
