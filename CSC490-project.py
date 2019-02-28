@@ -1,3 +1,5 @@
+# MacKenzie Pennington - CSC490 Spring 2019
+
 import sys
 from PyQt5 import QtWidgets, QtGui, QtCore
 from PyQt5.QtWidgets import QMainWindow, QApplication, QWidget, QAction, QTableWidget, QTableWidgetItem, QVBoxLayout
