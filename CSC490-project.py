@@ -2,8 +2,8 @@
 
 import sys
 from PyQt5 import QtWidgets, QtGui, QtCore
-from PyQt5.QtWidgets import QMainWindow, QApplication, QWidget, QAction, QTableWidget, QTableWidgetItem, QVBoxLayout
-from PyQt5.QtGui import QIcon
+from PyQt5.QtWidgets import QMainWindow, QApplication, QWidget, QAction, QTableWidget, QTableWidgetItem, QVBoxLayout, QShortcut
+from PyQt5.QtGui import QIcon, QKeySequence
 from PyQt5.QtCore import pyqtSlot
 from time import sleep
 from pynput import mouse
@@ -27,8 +27,12 @@ class LoadTable(QtWidgets.QTableWidget):
 
         self.cellChanged.connect(self._cellclicked)
         
+        self.shortcut = QShortcut(QKeySequence("Ctrl+R"), self)
+        self.shortcut.activated.connect(self.on_record_clicked)
+        
         self.mouseListener = mouse.Listener(on_click = self.on_click)
-        self.keyEvents = pandas.DataFrame(columns=['Device', 'Coordinates', 'Event'])
+        
+#        self.keyEvents = pandas.DataFrame(columns=['Device', 'Coordinates', 'Event'])
 
     @QtCore.pyqtSlot(int, int)
     def _cellclicked(self, r, c):
@@ -43,22 +47,17 @@ class LoadTable(QtWidgets.QTableWidget):
         
     @QtCore.pyqtSlot()
     def on_record_clicked(self):
-#        testList1 = ["mouse", "keyboard", "mouse"]
-#        testList2 = [(2,3), "-", (4,5)]
-#        testList3 = ["click", "spacebar", "right-click"]
-#        row = -1
-#
-#        for x in testList1:
-#            self.setItem(row+1, 0, QTableWidgetItem(str(testList1[x])))
-#        
-#        for y in testList2:
-#            self.setItem(row+1, 1, QTableWidgetItem(str(testList2[y]))
-#            
-#        for z in testList3:
-#            self.setItem(row+1, 2, QTableWidgetItem(str(testList3[z])))
-        
+        self.shortcut = QShortcut(QKeySequence("Ctrl+R"), self)
+        self.shortcut.activated.connect(self.on_record_clicked)
         self.mouseListener.start()
+        # Collect events until released
+        with mouse.Listener(
+                on_move = self.on_move,
+                on_click = self.on_click,
+                on_scroll = self.on_scroll) as listener:
+            listener.join()
         print('Recording...')
+        
       
     def on_move(x, y):
         print('Pointer moved to {0}'.format(
@@ -76,13 +75,6 @@ class LoadTable(QtWidgets.QTableWidget):
         print('Scrolled {0} at {1}'.format(
                 'down' if dy < 0 else 'up',
                 (x, y)))
-
-    # Collect events until released
-    with mouse.Listener(
-            on_move=on_move,
-            on_click=on_click,
-            on_scroll=on_scroll) as listener:
-        listener.join()
         
     @QtCore.pyqtSlot()
     def on_stop_clicked(self):
