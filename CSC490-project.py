@@ -15,7 +15,7 @@ class LoadTable(QtWidgets.QTableWidget):
     def __init__(self, parent=None):
         super(LoadTable, self).__init__(1, 3, parent)
         headertitle = ("Device", "Coordinates", "Event")
-        self.setFixedSize(340, 280)
+        self.setFixedSize(350, 280)
         self.setHorizontalHeaderLabels(headertitle)
         self.horizontalHeader().setSectionResizeMode(0, QtWidgets.QHeaderView.Stretch)
         self.verticalHeader().hide()
@@ -93,17 +93,17 @@ class LoadTable(QtWidgets.QTableWidget):
             self.mouseListener = mouse.Listener(on_click = self.on_click)
         
         print('Stopped recording!')
+        self.printDataTable()
         print(self.events)
         
     @QtCore.pyqtSlot()
     def printDataTable(self):
-        self.setRowCount(len(self.events))
-        for i, row in self.events.iterrows():
-            for j, data in enumerate(row):
-                item = QTableWidgetItem(str(data))
-                if j != 3:
-                    item.setFlags(QtCore.ItemIsEnabled)
-                self.setItem(i, j, item)
+        self.setColumnCount(len(self.events.columns))
+        self.setRowCount(len(self.events.index))
+        
+        for i in range(len(self.events.index)):
+            for j in range(len(self.events.columns)):
+                self.setItem(i, j, QTableWidgetItem(str(self.events.iloc[i, j])))
         
     @QtCore.pyqtSlot()
     def on_save_clicked(self):
