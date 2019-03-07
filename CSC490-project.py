@@ -13,7 +13,7 @@ import pandas
 class LoadTable(QtWidgets.QTableWidget):
     
     def __init__(self, parent=None):
-        super(LoadTable, self).__init__(3, 3, parent)
+        super(LoadTable, self).__init__(1, 3, parent)
         headertitle = ("Device", "Coordinates", "Event")
         self.setFixedSize(340, 280)
         self.setHorizontalHeaderLabels(headertitle)
@@ -29,8 +29,16 @@ class LoadTable(QtWidgets.QTableWidget):
         
         self.shortcut = QShortcut(QKeySequence("Ctrl+R"), self)
         self.shortcut.activated.connect(self.on_record_clicked)
+        self.shortcut = QShortcut(QKeySequence("Ctrl+Q"), self)
+        self.shortcut.activated.connect(self.on_stop_clicked)
+        self.shortcut = QShortcut(QKeySequence("Ctrl+E"), self)
+        self.shortcut.activated.connect(self.on_clear_clicked)
+        self.shortcut = QShortcut(QKeySequence("Ctrl+S"), self)
+        self.shortcut.activated.connect(self.on_save_clicked)
         
-        self.mouseListener = mouse.Listener(on_click = self.on_click)
+        self.mouseListener = mouse.Listener(on_click = self.on_click,
+                                            on_move = self.on_move,
+                                            on_scroll = self.on_scroll)
         self.events = pandas.DataFrame(columns=['Device', 'Coordinates', 'Event'])
         
 #        self.keyEvents = pandas.DataFrame(columns=['Device', 'Coordinates', 'Event'])
@@ -43,41 +51,43 @@ class LoadTable(QtWidgets.QTableWidget):
     @QtCore.pyqtSlot()
     def on_clear_clicked(self):
         print('Clear button clicked!')
+        self.events = self.events.drop(self.events.index)
         while self.rowCount() > 0:
             self.removeRow(self.rowCount()-1)
+            
+        print(self.events)
         
     @QtCore.pyqtSlot()
     def on_record_clicked(self):
-        self.shortcut = QShortcut(QKeySequence("Ctrl+R"), self)
-        self.shortcut.activated.connect(self.on_record_clicked)
         self.mouseListener.start()
-        # Collect events until released
-#        with mouse.Listener(
-#                on_move = self.on_move,
-#                on_click = self.on_click,
-#                on_scroll = self.on_scroll) as listener:
-#            listener.join()
         print('Recording...')
         
     def on_move(self, x, y):
-        print('Pointer moved to {0}'.format(
-                (x, y)))
+        self.events = self.events.append(
+                {'Device': 'Mouse',
+                 'Coordinates': (x, y),
+                 'Event': 'Move'
+                 }, ignore_index = True)
 
     def on_click(self, x, y, button, pressed):
         self.events = self.events.append(
                 {'Device': 'Mouse',
                  'Coordinates': (x,y),
-                 'Event': 'Click'}, ignore_index = True)
+                 'Event': '{0}'.format(
+                         'Clicked' if pressed else 'Released')
+                 }, ignore_index = True)
 
     def on_scroll(self, x, y, dx, dy):
-        print('Scrolled {0} at {1}'.format(
-                'down' if dy < 0 else 'up',
-                (x, y)))
+        self.events = self.events.append(
+                {'Device': 'Mouse',
+                 'Coordinates': (x, y),
+                 'Event': 'Scrolled {0}'.format(
+                         'down' if dy < 0 else 'up')
+                 }, ignore_index = True)
 
         
     @QtCore.pyqtSlot()
     def on_stop_clicked(self):
-        
         if self.mouseListener.running:
             self.mouseListener.stop()
             self.mouseListener = mouse.Listener(on_click = self.on_click)
@@ -93,6 +103,7 @@ class LoadTable(QtWidgets.QTableWidget):
                 item = QTableWidgetItem(str(data))
                 if j != 3:
                     item.setFlags(QtCore.ItemIsEnabled)
+                self.setItem(i, j, item)
         
     @QtCore.pyqtSlot()
     def on_save_clicked(self):
@@ -105,16 +116,16 @@ class Buttons(QtWidgets.QWidget):
 
         table = LoadTable()
 
-        clear_button = QtWidgets.QPushButton("Clear")
+        clear_button = QtWidgets.QPushButton("Clear [Ctrl+E]")
         clear_button.clicked.connect(table.on_clear_clicked)
 
-        record_button = QtWidgets.QPushButton("Record")
+        record_button = QtWidgets.QPushButton("Record [Ctrl+R]")
         record_button.clicked.connect(table.on_record_clicked)
         
-        stop_button = QtWidgets.QPushButton("Stop")
+        stop_button = QtWidgets.QPushButton("Stop [Ctrl+Q]")
         stop_button.clicked.connect(table.on_stop_clicked)
         
-        save_button = QtWidgets.QPushButton("Save")
+        save_button = QtWidgets.QPushButton("Save [Ctrl+S]")
         save_button.clicked.connect(table.on_save_clicked)
 
         button_layout = QtWidgets.QVBoxLayout()
