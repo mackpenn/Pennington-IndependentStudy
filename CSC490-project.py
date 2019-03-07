@@ -6,7 +6,7 @@ from PyQt5.QtWidgets import QMainWindow, QApplication, QWidget, QAction, QTableW
 from PyQt5.QtGui import QIcon, QKeySequence
 from PyQt5.QtCore import pyqtSlot
 from time import sleep
-from pynput import mouse
+from pynput import mouse, keyboard
 import pandas
 
 
@@ -31,6 +31,7 @@ class LoadTable(QtWidgets.QTableWidget):
         self.shortcut.activated.connect(self.on_record_clicked)
         
         self.mouseListener = mouse.Listener(on_click = self.on_click)
+        self.events = pandas.DataFrame(columns=['Device', 'Coordinates', 'Event'])
         
 #        self.keyEvents = pandas.DataFrame(columns=['Device', 'Coordinates', 'Event'])
 
@@ -51,47 +52,52 @@ class LoadTable(QtWidgets.QTableWidget):
         self.shortcut.activated.connect(self.on_record_clicked)
         self.mouseListener.start()
         # Collect events until released
-        with mouse.Listener(
-                on_move = self.on_move,
-                on_click = self.on_click,
-                on_scroll = self.on_scroll) as listener:
-            listener.join()
+#        with mouse.Listener(
+#                on_move = self.on_move,
+#                on_click = self.on_click,
+#                on_scroll = self.on_scroll) as listener:
+#            listener.join()
         print('Recording...')
         
-      
-    def on_move(x, y):
+    def on_move(self, x, y):
         print('Pointer moved to {0}'.format(
                 (x, y)))
 
-    def on_click(x, y, button, pressed):
-        print('{0} at {1}'.format(
-                'Pressed' if pressed else 'Released',
-                (x, y)))
-        if not pressed:
-            # Stop listener
-            return False
+    def on_click(self, x, y, button, pressed):
+        self.events = self.events.append(
+                {'Device': 'Mouse',
+                 'Coordinates': (x,y),
+                 'Event': 'Click'}, ignore_index = True)
 
-    def on_scroll(x, y, dx, dy):
+    def on_scroll(self, x, y, dx, dy):
         print('Scrolled {0} at {1}'.format(
                 'down' if dy < 0 else 'up',
                 (x, y)))
+
         
     @QtCore.pyqtSlot()
     def on_stop_clicked(self):
         
         if self.mouseListener.running:
             self.mouseListener.stop()
-            
             self.mouseListener = mouse.Listener(on_click = self.on_click)
         
         print('Stopped recording!')
+        print(self.events)
         
+    @QtCore.pyqtSlot()
+    def printDataTable(self):
+        self.setRowCount(len(self.events))
+        for i, row in self.events.iterrows():
+            for j, data in enumerate(row):
+                item = QTableWidgetItem(str(data))
+                if j != 3:
+                    item.setFlags(QtCore.ItemIsEnabled)
         
     @QtCore.pyqtSlot()
     def on_save_clicked(self):
         ##TO-DO
         print('Save button clicked!')
-
 
 class Buttons(QtWidgets.QWidget):
     def __init__(self, parent=None):
