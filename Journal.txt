@@ -58,6 +58,7 @@ Friday, February 22nd:
 -Researching other mouse recording methods, found Pynput (https://pypi.org/project/pynput/)
 
 Tuesday, February 26th:
+-Created new branch mouse-recording
 -Added mouse listener/monitor
 -Recording occurs without error but doesn't populate the data table, just the console
 -Recording happens on file execution, not on button press
@@ -65,3 +66,21 @@ Tuesday, February 26th:
 -When running file, the recording begins, and the window pops up only after clicking once. Clicking the buttons does not do much
 
 Thursday, February 28th:
+-Discussed collecting data THEN displaying results
+-Added hotkeys to start all button functinality
+-Discussed adjusting and scaling for different screen resolutions
+-Planned to add keyboard recording
+
+Tuesday, March 5th:
+-Began working out recording errors
+  -Actions not starting with button click/hotkey press
+  -Results print in console instead of in gui
+-Incorporated pandas dataframe to collect data
+
+Thursday, March 7th:
+-Fixed mouse recording actions (move, click, scroll)
+-Properly displays data in Dataframe
+-Still working out how to print data into gui instead of console
+-Created new branch keyboard-recording
+  -Added keyboard listener, current errors:
+    -When recording, using the keyboard then stopping recording crashes the program
