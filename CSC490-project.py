@@ -5,7 +5,6 @@ from PyQt5 import QtWidgets, QtGui, QtCore
 from PyQt5.QtWidgets import QMainWindow, QApplication, QWidget, QAction, QTableWidget, QTableWidgetItem, QVBoxLayout, QShortcut
 from PyQt5.QtGui import QIcon, QKeySequence
 from PyQt5.QtCore import pyqtSlot
-from time import sleep
 from pynput import mouse, keyboard
 import pandas
 
@@ -14,13 +13,15 @@ class LoadTable(QtWidgets.QTableWidget):
     
     def __init__(self, parent=None):
         super(LoadTable, self).__init__(1, 3, parent)
-        headertitle = ("Device", "Coordinates", "Event")
         self.setFixedSize(350, 280)
+        
+        headertitle = ("Device", "Coordinates", "Event")
         self.setHorizontalHeaderLabels(headertitle)
         self.horizontalHeader().setSectionResizeMode(0, QtWidgets.QHeaderView.Stretch)
-        self.verticalHeader().hide()
         self.horizontalHeader().setHighlightSections(False)
         self.horizontalHeader().setSectionResizeMode(QtWidgets.QHeaderView.Fixed)
+
+        self.verticalHeader().hide()
 
         self.setSelectionMode(QtWidgets.QAbstractItemView.NoSelection)
         self.setColumnWidth(0, 130)
@@ -40,8 +41,6 @@ class LoadTable(QtWidgets.QTableWidget):
                                             on_move = self.on_move,
                                             on_scroll = self.on_scroll)
         self.events = pandas.DataFrame(columns=['Device', 'Coordinates', 'Event'])
-        
-#        self.keyEvents = pandas.DataFrame(columns=['Device', 'Coordinates', 'Event'])
 
     @QtCore.pyqtSlot(int, int)
     def _cellclicked(self, r, c):
@@ -84,7 +83,6 @@ class LoadTable(QtWidgets.QTableWidget):
                  'Event': 'Scrolled {0}'.format(
                          'down' if dy < 0 else 'up')
                  }, ignore_index = True)
-
         
     @QtCore.pyqtSlot()
     def on_stop_clicked(self):
