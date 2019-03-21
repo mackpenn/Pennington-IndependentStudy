@@ -84,3 +84,10 @@ Thursday, March 7th:
 -Created new branch keyboard-recording
   -Added keyboard listener, current errors:
     -When recording, using the keyboard then stopping recording crashes the program
+
+Thursday, March 21st:
+-Pre-meeting issues:
+    -Able to control mouse
+    -Unsure how to control with pre-recorded coordinates
+    -Scrolling works but not when navigating to new page?
+    -Still need to incorporate keyboard input
