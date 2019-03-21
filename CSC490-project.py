@@ -6,7 +6,9 @@ from PyQt5.QtWidgets import QMainWindow, QApplication, QWidget, QAction, QTableW
 from PyQt5.QtGui import QIcon, QKeySequence
 from PyQt5.QtCore import pyqtSlot
 from pynput import mouse, keyboard
+from pynput.mouse import Button, Controller
 import pandas
+import time
 
 
 class LoadTable(QtWidgets.QTableWidget):
@@ -32,6 +34,8 @@ class LoadTable(QtWidgets.QTableWidget):
         self.shortcut.activated.connect(self.on_record_clicked)
         self.shortcut = QShortcut(QKeySequence("Ctrl+Q"), self)
         self.shortcut.activated.connect(self.on_stop_clicked)
+        self.shortcut = QShortcut(QKeySequence("Ctrl+P"), self)
+        self.shortcut.activated.connect(self.on_play_clicked)
         self.shortcut = QShortcut(QKeySequence("Ctrl+E"), self)
         self.shortcut.activated.connect(self.on_clear_clicked)
         self.shortcut = QShortcut(QKeySequence("Ctrl+S"), self)
@@ -41,6 +45,8 @@ class LoadTable(QtWidgets.QTableWidget):
                                             on_move = self.on_move,
                                             on_scroll = self.on_scroll)
         self.events = pandas.DataFrame(columns=['Device', 'Coordinates', 'Event'])
+        
+        self.mouseController = Controller()
 
     @QtCore.pyqtSlot(int, int)
     def _cellclicked(self, r, c):
@@ -95,6 +101,54 @@ class LoadTable(QtWidgets.QTableWidget):
         print(self.events)
         
     @QtCore.pyqtSlot()
+    def on_play_clicked(self):
+        ##Currently testing with "Water Vapor" search results on nsf.gov
+        mouse = self.mouseController
+        print('Testing play button...')
+        
+        #Current Positon
+        print('Current pointer position is {0}'.format(mouse.position))
+        time.sleep(1)
+        
+        #Move mouse twice, track position
+        mouse.position = (892, 286)
+        print('Moved to {0}'.format(mouse.position))
+        time.sleep(1)
+        
+        mouse.move(-143, 223)
+        print('Moved to {0}'.format(mouse.position))
+        time.sleep(1)
+        mouse.click(Button.left)
+        time.sleep(3)
+        mouse.click(Button.left)
+        time.sleep(1)
+        mouse.scroll(0, 20)
+        time.sleep(1)
+        mouse.move(554, 347)
+        print('Moved to {0}'.format(mouse.position))
+        time.sleep(1)
+        mouse.click(Button.left)
+        time.sleep(3)
+        
+        #Left-click
+#        mouse.press(Button.left)
+#        mouse.release(Button.left)
+#        time.sleep(1)
+#        
+#        #Right-click
+#        mouse.press(Button.right)
+#        mouse.release(Button.right)
+#        time.sleep(1)
+#        
+#        #Double-click
+#        mouse.click(Button.left, 2)
+#        time.sleep(1)
+#        
+#        #Scroll down 3 steps
+#        mouse.scroll(0,3)
+#        time.sleep(1)
+        
+    @QtCore.pyqtSlot()
     def printDataTable(self):
         self.setColumnCount(len(self.events.columns))
         self.setRowCount(len(self.events.index))
@@ -123,6 +177,9 @@ class Buttons(QtWidgets.QWidget):
         stop_button = QtWidgets.QPushButton("Stop [Ctrl+Q]")
         stop_button.clicked.connect(table.on_stop_clicked)
         
+        play_button = QtWidgets.QPushButton("Play [Ctrl+P]")
+        play_button.clicked.connect(table.on_play_clicked)
+        
         save_button = QtWidgets.QPushButton("Save [Ctrl+S]")
         save_button.clicked.connect(table.on_save_clicked)
 
@@ -130,6 +187,7 @@ class Buttons(QtWidgets.QWidget):
         button_layout.addWidget(clear_button, alignment=QtCore.Qt.AlignJustify)
         button_layout.addWidget(record_button, alignment=QtCore.Qt.AlignJustify)
         button_layout.addWidget(stop_button, alignment=QtCore.Qt.AlignJustify)
+        button_layout.addWidget(play_button, alignment=QtCore.Qt.AlignJustify)
         button_layout.addWidget(save_button, alignment=QtCore.Qt.AlignJustify)
 
         tablehbox = QtWidgets.QHBoxLayout()
