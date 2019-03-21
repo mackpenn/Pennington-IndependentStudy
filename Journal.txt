@@ -39,3 +39,48 @@ Wednesday, February 6th:
 Thursday, February 7th:
 -Pre-meeting: Tried to find workaround for using buttons and treeview at the same time
 -Ideas: Could go back to using grid instead of treeview, but might not be as efficient?
+
+Monday, February 11th:
+-Now using PyQt5 for interface
+-Created tables and buttons Clear, Record, and Stop
+-Need to adjust window size
+-Testing populating table with data, not working yet
+
+Thursday, February 14th:
+-Table populating with strings, but not with list items
+-After meeting, assigned task to begin mouse recording step
+
+Thursday, February 21st:
+-Meeting cancelled this week
+
+Friday, February 22nd:
+-Experimenting with pyautogui, functionality to control mouse and keyboard but not record?
+-Researching other mouse recording methods, found Pynput (https://pypi.org/project/pynput/)
+
+Tuesday, February 26th:
+-Created new branch mouse-recording
+-Added mouse listener/monitor
+-Recording occurs without error but doesn't populate the data table, just the console
+-Recording happens on file execution, not on button press
+-Added stop button, but the buttons don't seem to control the recording
+-When running file, the recording begins, and the window pops up only after clicking once. Clicking the buttons does not do much
+
+Thursday, February 28th:
+-Discussed collecting data THEN displaying results
+-Added hotkeys to start all button functinality
+-Discussed adjusting and scaling for different screen resolutions
+-Planned to add keyboard recording
+
+Tuesday, March 5th:
+-Began working out recording errors
+  -Actions not starting with button click/hotkey press
+  -Results print in console instead of in gui
+-Incorporated pandas dataframe to collect data
+
+Thursday, March 7th:
+-Fixed mouse recording actions (move, click, scroll)
+-Properly displays data in Dataframe
+-Still working out how to print data into gui instead of console
+-Created new branch keyboard-recording
+  -Added keyboard listener, current errors:
+    -When recording, using the keyboard then stopping recording crashes the program
