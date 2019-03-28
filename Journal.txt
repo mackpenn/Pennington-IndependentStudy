@@ -91,3 +91,8 @@ Thursday, March 21st:
     -Unsure how to control with pre-recorded coordinates
     -Scrolling works but not when navigating to new page?
     -Still need to incorporate keyboard input
+-To-Do:
+    -collect data from dataframe by column
+    -scan for event other than move, only move to that coordinate instead of pixel by pixel
+    -keyboard input!!
+    -download awards, save files as "nsf..."

@@ -44,9 +44,12 @@ class LoadTable(QtWidgets.QTableWidget):
         self.mouseListener = mouse.Listener(on_click = self.on_click,
                                             on_move = self.on_move,
                                             on_scroll = self.on_scroll)
-        self.events = pandas.DataFrame(columns=['Device', 'Coordinates', 'Event'])
-        
+#        self.kbListener = keyboard.Listener(on_press = self.on_press,
+#                                            on_release = self.on_release)
         self.mouseController = Controller()
+#        self.kbController = Controller()
+        
+        self.events = pandas.DataFrame(columns=['Device', 'Coordinates', 'Event'])
 
     @QtCore.pyqtSlot(int, int)
     def _cellclicked(self, r, c):
@@ -75,11 +78,19 @@ class LoadTable(QtWidgets.QTableWidget):
                  }, ignore_index = True)
 
     def on_click(self, x, y, button, pressed):
+        click = ""
+        release = ""
+        if "left" in str(button):
+            click = "Left-clicked"
+            release = "Released left-click"
+        else:
+            click = "Right-clicked"
+            release = "Released right-click"
+        
         self.events = self.events.append(
                 {'Device': 'Mouse',
                  'Coordinates': (x,y),
-                 'Event': '{0}'.format(
-                         'Clicked' if pressed else 'Released')
+                 'Event': '{0}'.format(click if pressed else release)
                  }, ignore_index = True)
 
     def on_scroll(self, x, y, dx, dy):
@@ -89,64 +100,73 @@ class LoadTable(QtWidgets.QTableWidget):
                  'Event': 'Scrolled {0}'.format(
                          'down' if dy < 0 else 'up')
                  }, ignore_index = True)
+                 
+#    def on_press(self, key):
+#        try:
+#            self.events = self.events.append(
+#                    {'Device': 'Keyboard',
+#                     'Coordinates': 'N/A',
+#                     'Event': '{0}'.format(key.char)
+#                    }, ignore_index = True)
+#        except AttributeError:
+#            self.events = self.events.append(
+#                    {'Device': 'Keyboard',
+#                     'Coordinates': 'N/A',
+#                     'Event': '{0}'.format(key)
+#                    }, ignore_index = True)
+#
+#    def on_release(self, key):
+#        self.events = self.events.append(
+#                {'Device': 'Keyboard',
+#                 'Coordinates': 'N/A',
+#                 'Event': '{0} released'.format(key)
+#                }, ignore_index = True)
+#
+#    # Collect events until released
+#    with keyboard.Listener(
+#            on_press=on_press,
+#            on_release=on_release) as listener:
+#        listener.join()
         
     @QtCore.pyqtSlot()
     def on_stop_clicked(self):
         if self.mouseListener.running:
             self.mouseListener.stop()
-            self.mouseListener = mouse.Listener(on_click = self.on_click)
+            self.mouseListener = mouse.Listener(on_click = self.on_click,
+                                                on_move = self.on_move,
+                                                on_scroll = self.on_scroll)
+#        if self.kbListener.running:
+#            self.kbListener.stop()
+#            self.kbListener = keyboard.Listener(on_press = self.on_press,
+#                                                on_release = self.on_release)
         
         print('Stopped recording!')
         self.printDataTable()
-        print(self.events)
         
     @QtCore.pyqtSlot()
     def on_play_clicked(self):
-        ##Currently testing with "Water Vapor" search results on nsf.gov
         mouse = self.mouseController
-        print('Testing play button...')
+        print('Replaying...')
         
-        #Current Positon
-        print('Current pointer position is {0}'.format(mouse.position))
-        time.sleep(1)
-        
-        #Move mouse twice, track position
-        mouse.position = (892, 286)
-        print('Moved to {0}'.format(mouse.position))
-        time.sleep(1)
-        
-        mouse.move(-143, 223)
-        print('Moved to {0}'.format(mouse.position))
-        time.sleep(1)
-        mouse.click(Button.left)
-        time.sleep(3)
-        mouse.click(Button.left)
-        time.sleep(1)
-        mouse.scroll(0, 20)
-        time.sleep(1)
-        mouse.move(554, 347)
-        print('Moved to {0}'.format(mouse.position))
-        time.sleep(1)
-        mouse.click(Button.left)
-        time.sleep(3)
-        
-        #Left-click
-#        mouse.press(Button.left)
-#        mouse.release(Button.left)
-#        time.sleep(1)
-#        
-#        #Right-click
-#        mouse.press(Button.right)
-#        mouse.release(Button.right)
-#        time.sleep(1)
-#        
-#        #Double-click
-#        mouse.click(Button.left, 2)
-#        time.sleep(1)
-#        
-#        #Scroll down 3 steps
-#        mouse.scroll(0,3)
-#        time.sleep(1)
+        for i, row in self.events.iterrows():
+            mouse.position = row.Coordinates
+            if type(row.Coordinates) is tuple:
+                if row.Event == 'Left-clicked':
+                    mouse.click(Button.left)
+                elif row.Event == 'Released left-click':
+                    mouse.release(Button.left)
+                    time.sleep(1)
+                elif row.Event == 'Right-clicked':
+                    mouse.click(Button.right)
+                elif row.Event == 'Released right-click':
+                    mouse.release(Button.right)
+                    time.sleep(1)
+                elif row.Event == 'Scrolled down':
+                    mouse.scroll(0, 1)
+                elif row.Event == 'Scrolled up':
+                    mouse.scroll(0, -1)
+                    
+        print('Finished replay!')
         
     @QtCore.pyqtSlot()
     def printDataTable(self):
