@@ -92,7 +92,21 @@ Thursday, March 21st:
     -Scrolling works but not when navigating to new page?
     -Still need to incorporate keyboard input
 -To-Do:
-    -collect data from dataframe by column
-    -scan for event other than move, only move to that coordinate instead of pixel by pixel
-    -keyboard input!!
-    -download awards, save files as "nsf..."
+    -Collect data from dataframe by column
+    -Scan for event other than move, only move to that coordinate instead of pixel-by-pixel
+    -Keyboard input!!
+    -Download awards, save files as "nsf..."
+
+Wednesday, March 27th:
+-Worked mainly on play button functionality
+-Play button successfully replays the recorded movements, but stuck on an endless loop where I cannot control the mouse. Only logging out and logging in stops the program now. Spending time debugging...
+-Couldn't get movement to only move to action-based coordinates, so it moves fluidly/pixel-by-pixel
+-On break, spent time figuring out keyboard listener. Seems like both cannot run at once, so there has to be keys to start and stop the listeners? There has to be a workaround, though.
+
+Thursday, March 28th:
+-Fixed endless loop
+    -No need for nested for-loop (was running the recorded actions for the amount of recorded actions there were, i.e. if 46 actions were recorded, it played through all 46 actions 46 times)
+-Worked on keyboard listener, still unable to find good fix
+-Tried to make buttons change color when recording/stopped so the user knows without looking at the console. Was able to get buttons to change colors on immediate click but not remain changed.
+-Successfully tested play button by recording on NSF website and downloading awards - unable to change names in download yet since there is no keyboard control
+
