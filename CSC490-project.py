@@ -10,25 +10,30 @@ from pynput.mouse import Button
 import pandas
 import time
 
-
+# Class to load data table
 class LoadTable(QtWidgets.QTableWidget):
     
     def __init__(self, parent=None, events=None):
+        # Set initial rows, columns, and window size
         super(LoadTable, self).__init__(1, 4, parent)
-        self.setFixedSize(550, 480)
+        self.setFixedSize(402, 300)
         
+        # Set horizontal headers
         headertitle = ("Device", "Coordinates", "Key", "Event")
         self.setHorizontalHeaderLabels(headertitle)
         self.horizontalHeader().setSectionResizeMode(0, QtWidgets.QHeaderView.Stretch)
         self.horizontalHeader().setHighlightSections(False)
         self.horizontalHeader().setSectionResizeMode(QtWidgets.QHeaderView.Fixed)
 
+        # Set vertical headers
         self.verticalHeader().hide()
 
+        # Disable item selection
         self.setSelectionMode(QtWidgets.QAbstractItemView.NoSelection)
 
         self.cellChanged.connect(self._cellclicked)
         
+        # Set shortcut keys, connect to button actions
         self.shortcut = QShortcut(QKeySequence("Ctrl+R"), self)
         self.shortcut.activated.connect(self.on_record_clicked)
         self.shortcut = QShortcut(QKeySequence("Ctrl+Q"), self)
@@ -40,15 +45,18 @@ class LoadTable(QtWidgets.QTableWidget):
         self.shortcut = QShortcut(QKeySequence("Ctrl+S"), self)
         self.shortcut.activated.connect(self.on_save_clicked)
         
+        # Initialize mouse and keyboard listeners
         self.mouseListener = mouse.Listener(on_click = self.on_click,
                                             on_move = self.on_move,
                                             on_scroll = self.on_scroll)
         self.kbListener = keyboard.Listener(on_press = self.on_press,
                                             on_release = self.on_release)
             
+        # Initialize mouse and keyboard controllers
         self.mouseController = mouse.Controller()
         self.kbController = keyboard.Controller()
         
+        # If none exists, create a dataframe
         if events is None:
             self.events = pandas.DataFrame(columns=['Device', 'Coordinates', 'Key', 'Event'])
         else:
@@ -59,6 +67,7 @@ class LoadTable(QtWidgets.QTableWidget):
         it = self.item(r, c)
         it.setTextAlignment(QtCore.Qt.AlignCenter)        
 
+    # Clears dataframe
     @QtCore.pyqtSlot()
     def on_clear_clicked(self):
         print('Clear button clicked!')
@@ -68,12 +77,14 @@ class LoadTable(QtWidgets.QTableWidget):
             
         print(self.events)
         
+    # Starts mouse and keyboard listeners to record
     @QtCore.pyqtSlot()
     def on_record_clicked(self):
         self.mouseListener.start()
         self.kbListener.start()
         print('Recording...')
         
+    # Tracks mouse movement
     def on_move(self, x, y):
         self.events = self.events.append(
                 {'Device': 'Mouse',
@@ -82,6 +93,7 @@ class LoadTable(QtWidgets.QTableWidget):
                  'Event': 'Move'
                  }, ignore_index = True)
 
+    # Tracks left/right mouse clicking/releasing
     def on_click(self, x, y, button, pressed):
         click = ""
         release = ""
@@ -99,6 +111,7 @@ class LoadTable(QtWidgets.QTableWidget):
                  'Event': '{0}'.format(click if pressed else release)
                  }, ignore_index = True)
 
+    # Tracks up/down scrolling
     def on_scroll(self, x, y, dx, dy):
         self.events = self.events.append(
                 {'Device': 'Mouse',
@@ -108,6 +121,7 @@ class LoadTable(QtWidgets.QTableWidget):
                          'down' if dy < 0 else 'up')
                  }, ignore_index = True)
                  
+    # Tracks key presses
     def on_press(self, key):
         self.events = self.events.append(
                 {'Device': 'Keyboard',
@@ -116,6 +130,7 @@ class LoadTable(QtWidgets.QTableWidget):
                  'Event': 'Pressed key'
                  }, ignore_index = True)
 
+    # Tracks key releases
     def on_release(self, key):
         self.events = self.events.append(
                 {'Device': 'Keyboard',
@@ -124,6 +139,7 @@ class LoadTable(QtWidgets.QTableWidget):
                  'Event': 'Released key'
                 }, ignore_index = True)
         
+    # Stops mouse and keyboard listeners, re-initializes them, prints recorded data
     @QtCore.pyqtSlot()
     def on_stop_clicked(self):
         if self.mouseListener.running:
@@ -138,39 +154,41 @@ class LoadTable(QtWidgets.QTableWidget):
         
         print('Stopped recording!')
         self.printDataTable()
-        
+    
+    # Starts controllers and plays all recorded actions
     @QtCore.pyqtSlot()
     def on_play_clicked(self):
         mouse = self.mouseController
         kb = self.kbController
         print('Replaying...')
         
+        # Iterate through the rows, individually play mouse/keyboard actions
         for i, row in self.events.iterrows():
-            if type(row.Coordinates) is tuple:
-                mouse.position = row.Coordinates
-                if row.Event == 'Left-clicked':
+            if row['Device'] == 'Mouse':
+                mouse.position = row['Coordinates']
+                if row['Event'] == 'Left-clicked':
                     mouse.click(Button.left)
-                elif row.Event == 'Released left-click':
+                elif row['Event'] == 'Released left-click':
                     mouse.release(Button.left)
                     time.sleep(1)
-                elif row.Event == 'Right-clicked':
+                elif row['Event'] == 'Right-clicked':
                     mouse.click(Button.right)
-                elif row.Event == 'Released right-click':
+                elif row['Event'] == 'Released right-click':
                     mouse.release(Button.right)
                     time.sleep(1)
-                elif row.Event == 'Scrolled down':
+                elif row['Event'] == 'Scrolled down':
                     mouse.scroll(0, 1)
-                elif row.Event == 'Scrolled up':
+                elif row['Event'] == 'Scrolled up':
                     mouse.scroll(0, -1)
             else:
-                if row.Event == 'Pressed key':
-                    print(row.Key.char)
-                    kb.press(row.Key.char)
-                elif row.Event == 'Released key':
-                    kb.release(row.Key.char)
+                if row['Event'] == 'Pressed key':
+                    kb.press(row['Key'].char)
+                elif row['Event'] == 'Released key':
+                    kb.release(row['Key'].char)
                     
         print('Finished replay!')
         
+    # Print dataframe to the window
     @QtCore.pyqtSlot()
     def printDataTable(self):
         self.setColumnCount(len(self.events.columns))
@@ -185,12 +203,15 @@ class LoadTable(QtWidgets.QTableWidget):
         ##TO-DO
         print('Save button clicked!')
 
+# Class to initialize buttons
 class Buttons(QtWidgets.QWidget):
     def __init__(self, parent=None):
         super(Buttons, self).__init__(parent)    
 
+        # Loads the GUI window
         table = LoadTable()
 
+        # Initialize and connect buttons to actions
         clear_button = QtWidgets.QPushButton("Clear [Ctrl+E]")
         clear_button.clicked.connect(table.on_clear_clicked)
 
@@ -206,6 +227,7 @@ class Buttons(QtWidgets.QWidget):
         save_button = QtWidgets.QPushButton("Save [Ctrl+S]")
         save_button.clicked.connect(table.on_save_clicked)
 
+        # Set button layout
         button_layout = QtWidgets.QVBoxLayout()
         button_layout.addWidget(clear_button, alignment=QtCore.Qt.AlignJustify)
         button_layout.addWidget(record_button, alignment=QtCore.Qt.AlignJustify)
@@ -213,6 +235,7 @@ class Buttons(QtWidgets.QWidget):
         button_layout.addWidget(play_button, alignment=QtCore.Qt.AlignJustify)
         button_layout.addWidget(save_button, alignment=QtCore.Qt.AlignJustify)
 
+        # Set box containing buttons
         tablehbox = QtWidgets.QHBoxLayout()
         tablehbox.setContentsMargins(10, 10, 10, 10)
         tablehbox.addWidget(table)
@@ -221,7 +244,7 @@ class Buttons(QtWidgets.QWidget):
         grid.addLayout(button_layout, 0, 1)
         grid.addLayout(tablehbox, 0, 0)        
 
-
+# Execute application
 if __name__ == '__main__':
     app = QtWidgets.QApplication(sys.argv)
     w = Buttons()
