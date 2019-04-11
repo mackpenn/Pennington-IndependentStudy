@@ -164,9 +164,10 @@ class LoadTable(QtWidgets.QTableWidget):
                     mouse.scroll(0, -1)
             else:
                 if row.Event == 'Pressed key':
-                    kb.press(row.Key)
+                    print(row.Key.char)
+                    kb.press(row.Key.char)
                 elif row.Event == 'Released key':
-                    kb.release(row.Key)
+                    kb.release(row.Key.char)
                     
         print('Finished replay!')
         
