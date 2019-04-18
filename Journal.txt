@@ -96,6 +96,7 @@ Thursday, March 21st:
     -Scan for event other than move, only move to that coordinate instead of pixel-by-pixel
     -Keyboard input!!
     -Download awards, save files as "nsf..."
+-Merged in mouse-recording branch
 
 Wednesday, March 27th:
 -Worked mainly on play button functionality
@@ -110,3 +111,53 @@ Thursday, March 28th:
 -Tried to make buttons change color when recording/stopped so the user knows without looking at the console. Was able to get buttons to change colors on immediate click but not remain changed.
 -Successfully tested play button by recording on NSF website and downloading awards - unable to change names in download yet since there is no keyboard control
 
+Friday, March 29th:
+-Keyboard and mouse listeners and controllers work together now - had to start, stop, and control separately
+-Finding some issues where the keyboard types different characters than what's recorded? Looking into it now...
+
+Tuesday, April 2nd:
+-Still having problems with keyboard/recording compatibility, can't seem to find anyone else experiencing this bug with Pynput
+-Cleaned up some of the code, added comments
+-Played around with window layout
+
+Thursday, April 4th:
+-Discovered during meeting with Dr. Ngo that the keyboard recording issue was due to type inconsistency
+  -Type-casting the key variables to char's fixed the problem
+-Discussed beginning to test program on more advanced tasks - i.e. downloading multiple files, changing file names, and repeating
+-Challenge finding website where you can download all files on page/select amount of files, changing pages at top of screen to avoid scrolling issues (we don't know exactly how far to scroll)
+
+Friday, April 5th:
+-Change some of the ways I access the dataframe after learning more about it at the Python Bootcamp
+-Made row/column access more efficient
+
+Wednesday, April 10th:
+-Current issues/questions:
+  -How to add wait-times for windows to load?
+  -How to interact with file saving dialog?
+  -How to detect special keys, i.e. arrow keys and enter key?
+-Tried working with Selenium on the wait times, not much success with that
+
+Thursday, April 11th:
+-Added in time sleeps after releasing a mouse-click, fixed wait-time issue but made playback painfully slow
+-Discussed in-meeting attempting to advance the program a little bit:
+  -User inserting wait times after recording - would have to add function to insert rows
+  -Giving user option to repeat x amount of rows x amount of times
+-Merged in mouse-controlling branch
+-Created advanced branch
+  
+Sunday, April 14th:
+-Added insert button, clear-all button, and clear-one button
+-Added in status label - trying to change it with button actions (ie. "Recording..." or "Replaying...")
+  -No success on this - struggling to change out-of-class variables in Python?
+  -Tried changing it to setting the window title with each button click, also didn't work. Went back to the inital label
+  
+Thursday, April 18th:
+-Playing around with insert function
+  -Successfully asks the user what they want to input in each column of the row, stores the answers in a variable
+  -Following a pandas dataframe tutorial on inserting row at a selected position
+    -Instructed using a separate insert function - thinks I'm passing in 4 arguments when I'm passing in 3?
+-Changed row-selection properties - selects an entire row, only one at a time. Plan on using this to find the index of the selected row and insert one row below the selected one
+-Work in progress: Wait-time functionality in playback
+  -if device = "Wait", extract integer from the string in the event "Wait ___ seconds" and wait that long
+-Made working "Clear One" button
+-Plan on adding repeat functionality once this is working
