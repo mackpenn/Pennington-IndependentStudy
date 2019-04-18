@@ -2,21 +2,22 @@
 
 import sys
 from PyQt5 import QtWidgets, QtGui, QtCore
-from PyQt5.QtWidgets import QMainWindow, QApplication, QWidget, QAction, QTableWidget, QTableWidgetItem, QVBoxLayout, QShortcut
+from PyQt5.QtWidgets import QMainWindow, QApplication, QWidget, QAction, QTableWidget, QTableWidgetItem, QVBoxLayout, QShortcut, QLabel, QInputDialog, QLineEdit
 from PyQt5.QtGui import QIcon, QKeySequence
 from PyQt5.QtCore import pyqtSlot
 from pynput import mouse, keyboard
 from pynput.mouse import Button
 import pandas
 import time
+import re
 
 # Class to load data table
 class LoadTable(QtWidgets.QTableWidget):
     
-    def __init__(self, parent=None, events=None):
+    def __init__(self, parent=None, df=None):
         # Set initial rows, columns, and window size
         super(LoadTable, self).__init__(1, 4, parent)
-        self.setFixedSize(402, 300)
+        self.setMinimumSize(405, 350)
         
         # Set horizontal headers
         headertitle = ("Device", "Coordinates", "Key", "Event")
@@ -28,8 +29,9 @@ class LoadTable(QtWidgets.QTableWidget):
         # Set vertical headers
         self.verticalHeader().hide()
 
-        # Disable item selection
-        self.setSelectionMode(QtWidgets.QAbstractItemView.NoSelection)
+        # Specify how rows should be selected
+        self.setSelectionMode(QtWidgets.QAbstractItemView.SingleSelection)
+        self.setSelectionBehavior(QtWidgets.QAbstractItemView.SelectRows)
 
         self.cellChanged.connect(self._cellclicked)
         
@@ -40,8 +42,12 @@ class LoadTable(QtWidgets.QTableWidget):
         self.shortcut.activated.connect(self.on_stop_clicked)
         self.shortcut = QShortcut(QKeySequence("Ctrl+P"), self)
         self.shortcut.activated.connect(self.on_play_clicked)
+        self.shortcut = QShortcut(QKeySequence("Ctrl+I"), self)
+        self.shortcut.activated.connect(self.on_insert_clicked)
+        self.shortcut = QShortcut(QKeySequence("Ctrl+O"), self)
+        self.shortcut.activated.connect(self.on_clear_one_clicked)
         self.shortcut = QShortcut(QKeySequence("Ctrl+E"), self)
-        self.shortcut.activated.connect(self.on_clear_clicked)
+        self.shortcut.activated.connect(self.on_clear_all_clicked)
         self.shortcut = QShortcut(QKeySequence("Ctrl+S"), self)
         self.shortcut.activated.connect(self.on_save_clicked)
         
@@ -57,10 +63,10 @@ class LoadTable(QtWidgets.QTableWidget):
         self.kbController = keyboard.Controller()
         
         # If none exists, create a dataframe
-        if events is None:
-            self.events = pandas.DataFrame(columns=['Device', 'Coordinates', 'Key', 'Event'])
+        if df is None:
+            self.df = pandas.DataFrame(columns=['Device', 'Coordinates', 'Key', 'Event'])
         else:
-            self.events = events
+            self.df = df
 
     @QtCore.pyqtSlot(int, int)
     def _cellclicked(self, r, c):
@@ -69,13 +75,19 @@ class LoadTable(QtWidgets.QTableWidget):
 
     # Clears dataframe
     @QtCore.pyqtSlot()
-    def on_clear_clicked(self):
-        print('Clear button clicked!')
-        self.events = self.events.drop(self.events.index)
+    def on_clear_all_clicked(self):
+        print('Clear All button clicked!')
+        self.df = self.df.drop(self.df.index)
         while self.rowCount() > 0:
             self.removeRow(self.rowCount()-1)
             
-        print(self.events)
+        print(self.df)
+       
+    # Clears one selected row of dataframe
+    @QtCore.pyqtSlot()
+    def on_clear_one_clicked(self):
+        self.removeRow(self.currentRow())
+        print('Clear One button clicked!')
         
     # Starts mouse and keyboard listeners to record
     @QtCore.pyqtSlot()
@@ -86,7 +98,7 @@ class LoadTable(QtWidgets.QTableWidget):
         
     # Tracks mouse movement
     def on_move(self, x, y):
-        self.events = self.events.append(
+        self.df = self.df.append(
                 {'Device': 'Mouse',
                  'Coordinates': (x, y),
                  'Key': 'n/a',
@@ -104,7 +116,7 @@ class LoadTable(QtWidgets.QTableWidget):
             click = "Right-clicked"
             release = "Released right-click"
         
-        self.events = self.events.append(
+        self.df = self.df.append(
                 {'Device': 'Mouse',
                  'Coordinates': (x,y),
                  'Key': 'n/a',
@@ -113,7 +125,7 @@ class LoadTable(QtWidgets.QTableWidget):
 
     # Tracks up/down scrolling
     def on_scroll(self, x, y, dx, dy):
-        self.events = self.events.append(
+        self.df = self.df.append(
                 {'Device': 'Mouse',
                  'Coordinates': (x, y),
                  'Key': 'n/a',
@@ -123,7 +135,7 @@ class LoadTable(QtWidgets.QTableWidget):
                  
     # Tracks key presses
     def on_press(self, key):
-        self.events = self.events.append(
+        self.df = self.df.append(
                 {'Device': 'Keyboard',
                  'Coordinates': 'n/a',
                  'Key': key,
@@ -132,7 +144,7 @@ class LoadTable(QtWidgets.QTableWidget):
 
     # Tracks key releases
     def on_release(self, key):
-        self.events = self.events.append(
+        self.df = self.df.append(
                 {'Device': 'Keyboard',
                  'Coordinates': 'n/a',
                  'Key': key,
@@ -163,41 +175,101 @@ class LoadTable(QtWidgets.QTableWidget):
         print('Replaying...')
         
         # Iterate through the rows, individually play mouse/keyboard actions
-        for i, row in self.events.iterrows():
+        for i, row in self.df.iterrows():
             if row['Device'] == 'Mouse':
                 mouse.position = row['Coordinates']
                 if row['Event'] == 'Left-clicked':
                     mouse.click(Button.left)
                 elif row['Event'] == 'Released left-click':
                     mouse.release(Button.left)
-                    time.sleep(1)
+                    time.sleep(10)
                 elif row['Event'] == 'Right-clicked':
                     mouse.click(Button.right)
                 elif row['Event'] == 'Released right-click':
                     mouse.release(Button.right)
-                    time.sleep(1)
+                    time.sleep(10)
                 elif row['Event'] == 'Scrolled down':
                     mouse.scroll(0, 1)
                 elif row['Event'] == 'Scrolled up':
                     mouse.scroll(0, -1)
-            else:
+            elif row['Device'] == 'Keyboard':
                 if row['Event'] == 'Pressed key':
                     kb.press(row['Key'].char)
                 elif row['Event'] == 'Released key':
                     kb.release(row['Key'].char)
+            else:
+                print("TO-DO: Wait...")
+                # Extract integer from Event string and wait
+                # re.search("\d", row.['Event'])
+                # time.sleep(wait)
                     
         print('Finished replay!')
         
     # Print dataframe to the window
     @QtCore.pyqtSlot()
     def printDataTable(self):
-        self.setColumnCount(len(self.events.columns))
-        self.setRowCount(len(self.events.index))
+        self.setColumnCount(len(self.df.columns))
+        self.setRowCount(len(self.df.index))
         
-        for i in range(len(self.events.index)):
-            for j in range(len(self.events.columns)):
-                self.setItem(i, j, QTableWidgetItem(str(self.events.iloc[i, j])))
+        for i in range(len(self.df.index)):
+            for j in range(len(self.df.columns)):
+                self.setItem(i, j, QTableWidgetItem(str(self.df.iloc[i, j])))
         
+    def insert_row(row_number, df, row_value):
+        df1 = df[0:row_number]
+        df2 = df[row_number:]
+        df1.loc[row_number]=row_value
+        df_result = pandas.concat([df1, df2])
+        df_result.index = [*range(df_result.shape[0])]
+        return df_result
+    
+    # Insert event below the selected row
+    @QtCore.pyqtSlot()
+    def on_insert_clicked(self):
+        devices = ("Mouse", "Keyboard", "Wait")
+        dev, okPressed = QInputDialog.getItem(self, "Inserting action...","Device:", devices, 0, False)
+        if okPressed and dev != '':
+            print(dev)
+        
+        if dev == "Mouse":
+            coord, okPressed = QInputDialog.getText(self, "Inserting action...","Coordinates:", QLineEdit.Normal, "")
+            if okPressed and coord != '':
+                print(coord)
+            key = "N/A"
+            print(key)
+            evnts = ("Move", "Left-Clicked", "Released left-click", "Right-Clicked", "Released right-click", "Scrolled up", "Scrolled down")
+            ev, okPressed = QInputDialog.getItem(self, "Inserting action...","Event:", evnts, 0, False)
+            if okPressed and ev != '':
+                print(ev)
+        elif dev == "Keyboard":
+            coord = "N/A"
+            print(coord)
+            key, okPressed = QInputDialog.getText(self, "Inserting action...","Key:", QLineEdit.Normal, "")
+            if okPressed and key != '':
+                print(key)
+            evnts = ("Pressed key", "Released key")
+            ev, okPressed = QInputDialog.getItem(self, "Inserting action...","Event:", evnts, 0, False)
+            if okPressed and ev != '':
+                print(ev)
+        else:
+            coord = "N/A"
+            print(coord)
+            key = "N/A"
+            print(key)
+            wait, okPressed = QInputDialog.getInt(self, "Inserting action...","Wait:", 0, 0, 300, 1)
+            ev = "Wait for {0} seconds".format(wait)
+            if okPressed:
+                print(ev)
+        
+        row_number = 2
+        row_value = [dev, coord, key, ev]
+        if row_number > self.df.index.max()+1: 
+            print("Invalid row number") 
+        else: 
+            self.df = self.insert_row(2, self.df, row_value)
+        
+        print('Insert button clicked!')
+    
     @QtCore.pyqtSlot()
     def on_save_clicked(self):
         ##TO-DO
@@ -210,11 +282,11 @@ class Buttons(QtWidgets.QWidget):
 
         # Loads the GUI window
         table = LoadTable()
+        
+        # Status Label
+        status_label = QtWidgets.QLabel("Click \"Record\" to get started!")
 
         # Initialize and connect buttons to actions
-        clear_button = QtWidgets.QPushButton("Clear [Ctrl+E]")
-        clear_button.clicked.connect(table.on_clear_clicked)
-
         record_button = QtWidgets.QPushButton("Record [Ctrl+R]")
         record_button.clicked.connect(table.on_record_clicked)
         
@@ -224,16 +296,28 @@ class Buttons(QtWidgets.QWidget):
         play_button = QtWidgets.QPushButton("Play [Ctrl+P]")
         play_button.clicked.connect(table.on_play_clicked)
         
+        insert_button = QtWidgets.QPushButton("Insert [Ctrl+I]")
+        insert_button.clicked.connect(table.on_insert_clicked)
+        
+        clear_one_button = QtWidgets.QPushButton("Clear One [Ctrl+O]")
+        clear_one_button.clicked.connect(table.on_clear_one_clicked)
+        
+        clear_all_button = QtWidgets.QPushButton("Clear All [Ctrl+E]")
+        clear_all_button.clicked.connect(table.on_clear_all_clicked)
+        
         save_button = QtWidgets.QPushButton("Save [Ctrl+S]")
         save_button.clicked.connect(table.on_save_clicked)
 
         # Set button layout
         button_layout = QtWidgets.QVBoxLayout()
-        button_layout.addWidget(clear_button, alignment=QtCore.Qt.AlignJustify)
-        button_layout.addWidget(record_button, alignment=QtCore.Qt.AlignJustify)
-        button_layout.addWidget(stop_button, alignment=QtCore.Qt.AlignJustify)
-        button_layout.addWidget(play_button, alignment=QtCore.Qt.AlignJustify)
-        button_layout.addWidget(save_button, alignment=QtCore.Qt.AlignJustify)
+        button_layout.addWidget(status_label, alignment=QtCore.Qt.AlignCenter)
+        button_layout.addWidget(record_button, alignment=QtCore.Qt.AlignCenter)
+        button_layout.addWidget(stop_button, alignment=QtCore.Qt.AlignCenter)
+        button_layout.addWidget(play_button, alignment=QtCore.Qt.AlignCenter)
+        button_layout.addWidget(insert_button, alignment=QtCore.Qt.AlignCenter)
+        button_layout.addWidget(clear_one_button, alignment=QtCore.Qt.AlignCenter)
+        button_layout.addWidget(clear_all_button, alignment=QtCore.Qt.AlignCenter)
+        button_layout.addWidget(save_button, alignment=QtCore.Qt.AlignCenter)
 
         # Set box containing buttons
         tablehbox = QtWidgets.QHBoxLayout()
