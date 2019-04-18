@@ -161,3 +161,5 @@ Thursday, April 18th:
   -if device = "Wait", extract integer from the string in the event "Wait ___ seconds" and wait that long
 -Made working "Clear One" button
 -Plan on adding repeat functionality once this is working
+
+-***look at Model View Control (MVC Framework) 
