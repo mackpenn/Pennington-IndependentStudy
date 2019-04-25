@@ -1,3 +1,4 @@
+
 # MacKenzie Pennington - CSC490 Spring 2019
 
 import sys
@@ -214,14 +215,6 @@ class LoadTable(QtWidgets.QTableWidget):
         for i in range(len(self.df.index)):
             for j in range(len(self.df.columns)):
                 self.setItem(i, j, QTableWidgetItem(str(self.df.iloc[i, j])))
-        
-    def insert_row(row_number, df, row_value):
-        df1 = df[0:row_number]
-        df2 = df[row_number:]
-        df1.loc[row_number]=row_value
-        df_result = pandas.concat([df1, df2])
-        df_result.index = [*range(df_result.shape[0])]
-        return df_result
     
     # Insert event below the selected row
     @QtCore.pyqtSlot()
@@ -235,14 +228,14 @@ class LoadTable(QtWidgets.QTableWidget):
             coord, okPressed = QInputDialog.getText(self, "Inserting action...","Coordinates:", QLineEdit.Normal, "")
             if okPressed and coord != '':
                 print(coord)
-            key = "N/A"
+            key = "n/a"
             print(key)
             evnts = ("Move", "Left-Clicked", "Released left-click", "Right-Clicked", "Released right-click", "Scrolled up", "Scrolled down")
             ev, okPressed = QInputDialog.getItem(self, "Inserting action...","Event:", evnts, 0, False)
             if okPressed and ev != '':
                 print(ev)
         elif dev == "Keyboard":
-            coord = "N/A"
+            coord = "n/a"
             print(coord)
             key, okPressed = QInputDialog.getText(self, "Inserting action...","Key:", QLineEdit.Normal, "")
             if okPressed and key != '':
@@ -252,21 +245,23 @@ class LoadTable(QtWidgets.QTableWidget):
             if okPressed and ev != '':
                 print(ev)
         else:
-            coord = "N/A"
+            coord = "n/a"
             print(coord)
-            key = "N/A"
+            key = "n/a"
             print(key)
             wait, okPressed = QInputDialog.getInt(self, "Inserting action...","Wait:", 0, 0, 300, 1)
             ev = "Wait for {0} seconds".format(wait)
             if okPressed:
                 print(ev)
         
-        row_number = 2
-        row_value = [dev, coord, key, ev]
-        if row_number > self.df.index.max()+1: 
-            print("Invalid row number") 
-        else: 
-            self.df = self.insert_row(2, self.df, row_value)
+#        newRow = pandas.DataFrame({"Device:": dev, "Coordinates": "(" + coord + ")", "Key": key, "Event": ev}, index=[selectedIndex])
+#        self.df = self.df.append(newRow, ignore_index=False, sort=False)
+#        self.printDataTable()
+        
+        self.df.loc[self.currentRow()] = [dev, coord, key, ev]  # adding a row
+        self.df.index = self.df.index + 1  # shifting index
+        self.df = self.df.sort_index()  # sorting by index
+        self.printDataTable()
         
         print('Insert button clicked!')
     
