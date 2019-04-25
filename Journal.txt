@@ -162,4 +162,11 @@ Thursday, April 18th:
 -Made working "Clear One" button
 -Plan on adding repeat functionality once this is working
 
+Thursday, April 25th:
+-Roadblocks of today:
+  -Inserting a row at given index instead of appending on the end of the table/beginning of table/replacing row
+  -Reads in device as "nan" after sorting?
+  -Occasionally program crashes during recording, have to restart kernel everytime
+-Been working on getting the insert function to work
+
 -***look at Model View Control (MVC Framework) 
