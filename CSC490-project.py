@@ -10,7 +10,6 @@ from pynput import mouse, keyboard
 from pynput.mouse import Button
 import pandas
 import time
-import re
 
 # Class to load data table
 class LoadTable(QtWidgets.QTableWidget):
@@ -35,6 +34,8 @@ class LoadTable(QtWidgets.QTableWidget):
         self.setSelectionBehavior(QtWidgets.QAbstractItemView.SelectRows)
 
         self.cellChanged.connect(self._cellclicked)
+        
+        self.status_label = "Click \"Record\" to begin!"
         
         # Set shortcut keys, connect to button actions
         self.shortcut = QShortcut(QKeySequence("Ctrl+R"), self)
@@ -77,6 +78,7 @@ class LoadTable(QtWidgets.QTableWidget):
     # Clears dataframe
     @QtCore.pyqtSlot()
     def on_clear_all_clicked(self):
+        self.status_label = "Cleared All"
         print('Clear All button clicked!')
         self.df = self.df.drop(self.df.index)
         while self.rowCount() > 0:
@@ -88,6 +90,7 @@ class LoadTable(QtWidgets.QTableWidget):
     @QtCore.pyqtSlot()
     def on_clear_one_clicked(self):
         self.removeRow(self.currentRow())
+        self.status_label = "Cleared selected"
         print('Clear One button clicked!')
         
     # Starts mouse and keyboard listeners to record
@@ -95,6 +98,8 @@ class LoadTable(QtWidgets.QTableWidget):
     def on_record_clicked(self):
         self.mouseListener.start()
         self.kbListener.start()
+        self.status_label = "Recording..."
+        Buttons().update()
         print('Recording...')
         
     # Tracks mouse movement
@@ -254,13 +259,40 @@ class LoadTable(QtWidgets.QTableWidget):
             if okPressed:
                 print(ev)
         
-#        newRow = pandas.DataFrame({"Device:": dev, "Coordinates": "(" + coord + ")", "Key": key, "Event": ev}, index=[selectedIndex])
+        # Adds row onto the end
+#        newRow = pandas.DataFrame({"Device:": dev, "Coordinates": "(" + coord + ")", "Key": key, "Event": ev}, index=[self.currentRow()])
 #        self.df = self.df.append(newRow, ignore_index=False, sort=False)
 #        self.printDataTable()
         
-        self.df.loc[self.currentRow()] = [dev, coord, key, ev]  # adding a row
-        self.df.index = self.df.index + 1  # shifting index
-        self.df = self.df.sort_index()  # sorting by index
+        # Replaces selected row
+#        self.df.loc[self.currentRow()] = [dev, coord, key, ev]  # adding a row
+#        self.df.index = self.df.index + 1  # shifting index
+#        self.df = self.df.sort_index().reset_index(drop=True)  # sorting by index
+        
+#        x = [dev, coord, key, ev]
+#        rows = []
+#        cur = {}
+#
+#        for i in self.df.index:
+#            if i in x:
+#                cur['index'] = i
+#                cur['Device'] = self.df.iloc[i]['Device']
+#                cur['Coordinates'] = self.df.iloc[i]['Coordinates']
+#                cur['Key'] = self.df.iloc[i]['Key']
+#                cur['Event'] = self.df.iloc[i].subid - 1
+#                rows.append(cur)
+#                cur = {}
+#                
+#        offset = 0; #tracks the number of rows already inserted to ensure rows are inserted in the correct position
+#
+#        for d in rows:
+#            df1 = pandas.concat([df1.head(d['index'] + offset), pandas.DataFrame([d]), df1.tail(len(df) - (d['index']+offset))])
+#            offset+=1
+#
+#
+#        self.df.reset_index(inplace=True)
+#        self.df.drop('index', axis=1, inplace=True)
+        
         self.printDataTable()
         
         print('Insert button clicked!')
@@ -279,7 +311,7 @@ class Buttons(QtWidgets.QWidget):
         table = LoadTable()
         
         # Status Label
-        status_label = QtWidgets.QLabel("Click \"Record\" to get started!")
+        status_label = QLabel(table.status_label)
 
         # Initialize and connect buttons to actions
         record_button = QtWidgets.QPushButton("Record [Ctrl+R]")
@@ -321,7 +353,7 @@ class Buttons(QtWidgets.QWidget):
 
         grid = QtWidgets.QGridLayout(self)
         grid.addLayout(button_layout, 0, 1)
-        grid.addLayout(tablehbox, 0, 0)        
+        grid.addLayout(tablehbox, 0, 0)
 
 # Execute application
 if __name__ == '__main__':
