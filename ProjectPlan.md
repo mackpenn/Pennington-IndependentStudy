@@ -1,8 +1,8 @@
-MacKenzie Pennington
-Study Plan - CSC 490
-[IN PROGRESS]
+## MacKenzie Pennington
+## Study Plan - CSC 490
+## [IN PROGRESS]
 
-Goals to work towards during this study:
+# Goals to work towards during this study:
 
 1. Create a process that can capture mouse and keyboard movement and replay that movement
   - Define monitor area (screen resolution, etc.) where the movement event occurs
