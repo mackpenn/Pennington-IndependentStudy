@@ -1,8 +1,8 @@
-# MacKenzie Pennington
-# Technical Journal - CSC 490
-# Thursdays 3pm-4pm with Dr. Ngo
+## MacKenzie Pennington
+## Technical Journal - CSC 490
+## Thursdays 3pm-4pm with Dr. Ngo
 
-----------------------------------------------------------
+### ----------------------------------------------------------
 
 # Friday, December 7th:
 -Final planning meeting with Dr. Ngo
